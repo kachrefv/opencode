@@ -94,6 +94,10 @@ export const layer = Layer.effect(
           question: "deny",
           plan_enter: "deny",
           plan_exit: "deny",
+          indexer_map: "allow",
+          indexer_note_add: "allow",
+          indexer_note_search: "allow",
+          indexer_note_list: "allow",
           // mirrors github.com/github/gitignore Node.gitignore pattern for .env files
           read: {
             "*": "allow",
@@ -171,6 +175,9 @@ export const layer = Layer.effect(
                 webfetch: "allow",
                 websearch: "allow",
                 codesearch: "allow",
+                indexer_map: "allow",
+                indexer_note_search: "allow",
+                indexer_note_list: "allow",
                 read: "allow",
                 external_directory: {
                   "*": "ask",

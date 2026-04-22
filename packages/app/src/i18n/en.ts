@@ -12,6 +12,7 @@ export const dict = {
   "command.category.terminal": "Terminal",
   "command.category.model": "Model",
   "command.category.mcp": "MCP",
+  "command.category.skill": "Skill",
   "command.category.agent": "Agent",
   "command.category.permissions": "Permissions",
   "command.category.workspace": "Workspace",
@@ -65,6 +66,8 @@ export const dict = {
   "command.model.choose.description": "Select a different model",
   "command.mcp.toggle": "Toggle MCPs",
   "command.mcp.toggle.description": "Toggle MCPs",
+  "command.skill.toggle": "Browse Skills",
+  "command.skill.toggle.description": "Browse and select available skills",
   "command.agent.cycle": "Cycle agent",
   "command.agent.cycle.description": "Switch to the next agent",
   "command.agent.cycle.reverse": "Cycle agent backwards",
@@ -297,6 +300,10 @@ export const dict = {
   "dialog.mcp.title": "MCPs",
   "dialog.mcp.description": "{{enabled}} of {{total}} enabled",
   "dialog.mcp.empty": "No MCPs configured",
+
+  "dialog.skill.title": "Skills",
+  "dialog.skill.description": "Search and load available skills",
+  "dialog.skill.empty": "No skills configured",
 
   "dialog.lsp.empty": "LSPs auto-detected from file types",
   "dialog.plugins.empty": "Plugins configured in opencode.json",

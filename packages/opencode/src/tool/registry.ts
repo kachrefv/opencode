@@ -45,6 +45,11 @@ import { Bus } from "../bus"
 import { Agent } from "../agent/agent"
 import { Skill } from "../skill"
 import { Permission } from "@/permission"
+import { Indexer } from "../indexer/indexer"
+import { IndexerMapTool } from "./indexer_map"
+import { IndexerNoteAddTool } from "./indexer_note_add"
+import { IndexerNoteSearchTool } from "./indexer_note_search"
+import { IndexerNoteListTool } from "./indexer_note_list"
 
 const log = Log.create({ service: "tool.registry" })
 
@@ -87,6 +92,7 @@ export const layer: Layer.Layer<
   | Ripgrep.Service
   | Format.Service
   | Truncate.Service
+  | Indexer.Service
 > = Layer.effect(
   Service,
   Effect.gen(function* () {
@@ -113,6 +119,10 @@ export const layer: Layer.Layer<
     const greptool = yield* GrepTool
     const patchtool = yield* ApplyPatchTool
     const skilltool = yield* SkillTool
+    const indexermap = yield* IndexerMapTool
+    const indexernoteadd = yield* IndexerNoteAddTool
+    const indexernotesearch = yield* IndexerNoteSearchTool
+    const indexernotelist = yield* IndexerNoteListTool
     const agent = yield* Agent.Service
 
     const state = yield* InstanceState.make<State>(
@@ -194,6 +204,10 @@ export const layer: Layer.Layer<
           question: Tool.init(question),
           lsp: Tool.init(lsptool),
           plan: Tool.init(plan),
+          indexer_map: Tool.init(indexermap),
+          indexer_note_add: Tool.init(indexernoteadd),
+          indexer_note_search: Tool.init(indexernotesearch),
+          indexer_note_list: Tool.init(indexernotelist),
         })
 
         return {
@@ -214,6 +228,10 @@ export const layer: Layer.Layer<
             tool.code,
             tool.skill,
             tool.patch,
+            tool.indexer_map,
+            tool.indexer_note_add,
+            tool.indexer_note_search,
+            tool.indexer_note_list,
             ...(Flag.OPENCODE_EXPERIMENTAL_LSP_TOOL ? [tool.lsp] : []),
             ...(Flag.OPENCODE_EXPERIMENTAL_PLAN_MODE && Flag.OPENCODE_CLIENT === "cli" ? [tool.plan] : []),
           ],
@@ -335,5 +353,6 @@ export const defaultLayer = Layer.suspend(() =>
     Layer.provide(CrossSpawnSpawner.defaultLayer),
     Layer.provide(Ripgrep.defaultLayer),
     Layer.provide(Truncate.defaultLayer),
+    Layer.provide(Indexer.defaultLayer),
   ),
 )

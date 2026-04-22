@@ -14,6 +14,7 @@ import { MCP } from "../../src/mcp"
 import { Permission } from "../../src/permission"
 import { Plugin } from "../../src/plugin"
 import { Provider as ProviderSvc } from "../../src/provider"
+import { Indexer } from "../../src/indexer/indexer"
 import { Env } from "../../src/env"
 import { ModelID, ProviderID } from "../../src/provider/schema"
 import { Question } from "../../src/question"
@@ -164,6 +165,7 @@ function makeHttp() {
     Plugin.defaultLayer,
     Config.defaultLayer,
     ProviderSvc.defaultLayer,
+    Indexer.defaultLayer,
     lsp,
     mcp,
     AppFileSystem.defaultLayer,
@@ -207,6 +209,7 @@ const unix = process.platform !== "win32" ? it.live : it.live.skip
 // Config that registers a custom "test" provider with a "test-model" model
 // so provider model lookup succeeds inside the loop.
 const cfg = {
+  experimental: { disable_indexer: true },
   provider: {
     test: {
       name: "Test",

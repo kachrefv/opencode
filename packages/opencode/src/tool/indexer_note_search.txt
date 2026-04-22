@@ -1,0 +1,3 @@
+- Performs a search across all indexed notes.
+- Returns matching notes with their associated file paths.
+- Useful for finding existing insights or explanations related to a specific topic or pattern.

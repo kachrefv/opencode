@@ -1,0 +1,2 @@
+- Retrieves all notes attached to a specific file.
+- Use this to see all historical insights for a file you are currently working on.

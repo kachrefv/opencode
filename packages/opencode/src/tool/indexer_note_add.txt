@@ -1,0 +1,3 @@
+- Attaches a markdown note to a file.
+- Use this to store persistent insights, explanations of complex logic, or structural decisions.
+- Helps agents and users understand the codebase over time.

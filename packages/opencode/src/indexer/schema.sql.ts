@@ -5,7 +5,7 @@ export const IndexerNodeTable = sqliteTable(
   "indexer_node",
   {
     id: text().primaryKey(), // Format: `${workspace}:${path}`
-    workspace: text().notNull(),
+    workspace: text().default("global").notNull(),
     path: text().notNull(),
     parent_path: text(),
     type: text().$type<"file" | "dir" | "symlink">().notNull(),
@@ -22,7 +22,7 @@ export const IndexerNoteTable = sqliteTable(
   "indexer_note",
   {
     id: text().primaryKey(),
-    workspace: text().notNull(),
+    workspace: text().default("global").notNull(),
     file_path: text().notNull(),
     content: text().notNull(),
     tags: text({ mode: "json" }).$type<string[]>(),

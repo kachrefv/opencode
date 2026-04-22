@@ -1,7 +1,7 @@
 {
   "version": "7",
   "dialect": "sqlite",
-  "id": "6c6ef02b-3d91-4788-ae81-a29dddd093f2",
+  "id": "9bd34a5b-05b3-4fff-8864-8045c0ad6765",
   "prevIds": [
     "6e2e2a96-48e8-47fb-9089-7f839fd11503"
   ],
@@ -344,7 +344,7 @@
       "type": "text",
       "notNull": true,
       "autoincrement": false,
-      "default": null,
+      "default": "'global'",
       "generated": null,
       "name": "workspace",
       "entityType": "columns",
@@ -424,7 +424,7 @@
       "type": "text",
       "notNull": true,
       "autoincrement": false,
-      "default": null,
+      "default": "'global'",
       "generated": null,
       "name": "workspace",
       "entityType": "columns",

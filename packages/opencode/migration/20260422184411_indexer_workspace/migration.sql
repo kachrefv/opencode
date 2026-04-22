@@ -1,10 +1,10 @@
 ALTER TABLE `indexer_node` ADD `id` text;--> statement-breakpoint
-ALTER TABLE `indexer_node` ADD `workspace` text NOT NULL;--> statement-breakpoint
-ALTER TABLE `indexer_note` ADD `workspace` text NOT NULL;--> statement-breakpoint
+ALTER TABLE `indexer_node` ADD `workspace` text DEFAULT 'global' NOT NULL;--> statement-breakpoint
+ALTER TABLE `indexer_note` ADD `workspace` text DEFAULT 'global' NOT NULL;--> statement-breakpoint
 PRAGMA foreign_keys=OFF;--> statement-breakpoint
 CREATE TABLE `__new_indexer_note` (
 	`id` text PRIMARY KEY,
-	`workspace` text NOT NULL,
+	`workspace` text DEFAULT 'global' NOT NULL,
 	`file_path` text NOT NULL,
 	`content` text NOT NULL,
 	`tags` text,
@@ -19,7 +19,7 @@ PRAGMA foreign_keys=ON;--> statement-breakpoint
 PRAGMA foreign_keys=OFF;--> statement-breakpoint
 CREATE TABLE `__new_indexer_node` (
 	`id` text PRIMARY KEY,
-	`workspace` text NOT NULL,
+	`workspace` text DEFAULT 'global' NOT NULL,
 	`path` text NOT NULL,
 	`parent_path` text,
 	`type` text NOT NULL,

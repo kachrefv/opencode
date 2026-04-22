@@ -76,10 +76,12 @@ export const layer = Layer.effect(
         Database.use((db: any) => db.delete(IndexerNodeTable).where(and(eq(IndexerNodeTable.workspace, workspace), eq(IndexerNodeTable.path, relPath.replace(/\\/g, "/")))).run())
       })
 
+    const configService = yield* Config.Service
+
     const state = yield* InstanceState.make(
       Effect.fn("Indexer.state")(function* () {
         const flag = yield* Flag.OPENCODE_EXPERIMENTAL_DISABLE_INDEXER
-        const cfg = yield* Config.Service.use((svc) => svc.get())
+        const cfg = yield* configService.get()
         if (flag || cfg.experimental?.disable_indexer) return
 
         log.info("initializing indexer", { directory: Instance.directory })
@@ -216,7 +218,7 @@ export const layer = Layer.effect(
 
     return Service.of({
       init: Effect.fn("Indexer.init")(function* () {
-        yield* InstanceState.get(state)
+        yield* Effect.catch(InstanceState.get(state), (e) => Effect.logError("Indexer init error", e))
       }),
       getMap,
       addNote,
@@ -226,7 +228,7 @@ export const layer = Layer.effect(
   }),
 )
 
-export const defaultLayer = layer.pipe(Layer.provide(Bus.defaultLayer))
+export const defaultLayer = layer.pipe(Layer.provide(Bus.defaultLayer), Layer.provide(Config.defaultLayer))
 
 export * as Indexer from "./indexer"
 

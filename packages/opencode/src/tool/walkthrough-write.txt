@@ -1,0 +1,9 @@
+Use this tool to write the walkthrough of changes to the session's designated walkthrough file.
+
+This tool should be used to record what was actually changed, how it was tested, and how it was validated. It is specifically allowed in plan mode and build mode.
+
+Call this tool:
+- To document the completed work before returning to plan mode via plan_enter
+- To update the walkthrough if further changes or tests are performed
+
+The path to the walkthrough file is managed automatically by the system.

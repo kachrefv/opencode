@@ -3,6 +3,7 @@ import { Layer, ManagedRuntime } from "effect"
 import { Plugin } from "@/plugin"
 import { LSP } from "@/lsp"
 import { FileWatcher } from "@/file/watcher"
+import { Indexer } from "@/indexer/indexer"
 import { Format } from "@/format"
 import { ShareNext } from "@/share"
 import { File } from "@/file"
@@ -21,6 +22,7 @@ export const BootstrapLayer = Layer.mergeAll(
   LSP.defaultLayer,
   File.defaultLayer,
   FileWatcher.defaultLayer,
+  Indexer.defaultLayer,
   Vcs.defaultLayer,
   Snapshot.defaultLayer,
   Bus.defaultLayer,

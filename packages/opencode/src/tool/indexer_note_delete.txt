@@ -1,0 +1,2 @@
+- Deletes an existing persistent markdown note from the codebase index.
+- Use this when a note is no longer relevant or the file it relates to has been drastically restructured and the note shouldn't exist anymore.

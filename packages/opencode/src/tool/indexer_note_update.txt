@@ -1,0 +1,2 @@
+- Updates an existing persistent markdown note in the codebase index.
+- Use this when previously recorded insights or assumptions have changed.

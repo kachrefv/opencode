@@ -1,0 +1,3 @@
+- Performs a semantic or keyword search across all persistent notes attached to the codebase.
+- Returns matching notes with their associated file paths.
+- Use this before implementing large changes to find existing architectural insights, explanations, or historical decisions related to a specific topic, feature, or pattern.

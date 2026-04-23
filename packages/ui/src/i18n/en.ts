@@ -109,6 +109,7 @@ export const dict: Record<string, string> = {
   "ui.tool.webfetch": "Webfetch",
   "ui.tool.websearch": "Web Search",
   "ui.tool.codesearch": "Code Search",
+  "ui.tool.batch_execute": "Parallel Actions",
   "ui.tool.shell": "Shell",
   "ui.tool.patch": "Patch",
   "ui.tool.todos": "To-dos",
@@ -124,6 +125,8 @@ export const dict: Record<string, string> = {
 
   "ui.common.file.one": "file",
   "ui.common.file.other": "files",
+  "ui.common.tool.one": "tool",
+  "ui.common.tool.other": "tools",
   "ui.common.question.one": "question",
   "ui.common.question.other": "questions",
 

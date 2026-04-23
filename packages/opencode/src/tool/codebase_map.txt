@@ -1,0 +1,4 @@
+- Returns a JSON tree of the codebase starting from the specified directory.
+- Includes node sizes and the number of notes attached to each file.
+- Use this to quickly understand the project's structure, locate relevant files, and avoid multiple nested bash `ls` calls.
+- Provides a high-level architectural view without needing to explore directories individually.

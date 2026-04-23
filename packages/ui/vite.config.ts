@@ -12,13 +12,13 @@ export default defineConfig({
         withTypes: true,
         inputDir: "src/assets/icons/file-types",
         outputDir: "src/components/file-icons",
-        formatter: "prettier",
+        formatter: undefined,
       },
       {
         withTypes: true,
         inputDir: "src/assets/icons/provider",
         outputDir: "src/components/provider-icons",
-        formatter: "prettier",
+        formatter: undefined,
         iconNameTransformer: (iconName) => iconName,
       },
     ]),
@@ -46,14 +46,26 @@ function providerIconsPlugin() {
 
 async function fetchProviderIcons() {
   const url = process.env.OPENCODE_MODELS_URL || "https://models.dev"
-  const providers = await fetch(`${url}/api.json`)
-    .then((res) => res.json())
-    .then((json) => Object.keys(json))
-  await Promise.all(
-    providers.map((provider) =>
-      fetch(`${url}/logos/${provider}.svg`)
-        .then((res) => res.text())
-        .then((svg) => fs.writeFileSync(`./src/assets/icons/provider/${provider}.svg`, svg)),
-    ),
-  )
+  try {
+    const providers = await fetch(`${url}/api.json`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        return res.json()
+      })
+      .then((json) => Object.keys(json))
+    await Promise.all(
+      providers.map((provider) =>
+        fetch(`${url}/logos/${provider}.svg`)
+          .then((res) => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`)
+            return res.text()
+          })
+          .then((svg) => fs.writeFileSync(`./src/assets/icons/provider/${provider}.svg`, svg)),
+      ),
+    )
+  } catch (error: any) {
+    console.warn(`Failed to fetch provider icons from ${url}:`, error.message)
+    // If it fails, we just keep the existing ones in src/assets/icons/provider.
+    // The spritesheet plugin will still work with the existing SVGs.
+  }
 }

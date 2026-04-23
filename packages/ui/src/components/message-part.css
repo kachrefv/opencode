@@ -1258,6 +1258,17 @@
   }
 }
 
+[data-component="batch-execute-tool"] {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 12px;
+}
+
+[data-slot="batch-execute-item"] {
+  width: 100%;
+}
+
 [data-component="tool-loaded-file"] {
   display: flex;
   align-items: center;

@@ -1,0 +1,10 @@
+Executes multiple independent tools in parallel as a single batched operation.
+
+Usage:
+- Use this tool ONLY when you need to run multiple tools at once that DO NOT depend on each other (e.g. multiple "read" or "grep" commands, independent "bash" queries).
+- Do NOT use this tool if one step relies on the output of the preceding step.
+- All parallel tools must complete successfully; if one fails, the overall batch will report the failure.
+- When calling `bash`, ensure you adhere to the bash tool's rules (e.g. providing an absolute `workdir`, verifying paths, correct descriptions).
+- You can mix different types of tools (e.g. executing a `glob`, a `read`, and a `bash` command concurrently).
+- Pass parameters accurately matching what the individual tools expect.
+- The result will be an array mapping to your sub-calls.

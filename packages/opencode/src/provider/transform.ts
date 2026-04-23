@@ -236,6 +236,12 @@ function applyCaching(msgs: ModelMessage[], model: Provider.Model): ModelMessage
     alibaba: {
       cacheControl: { type: "ephemeral" },
     },
+    google: {
+      cacheControl: { type: "ephemeral" },
+    },
+    vertex: {
+      cacheControl: { type: "ephemeral" },
+    },
   }
 
   for (const msg of unique([...system, ...final])) {
@@ -313,6 +319,8 @@ export function message(msgs: ModelMessage[], model: Provider.Model, options: Re
       model.id.includes("anthropic") ||
       model.id.includes("claude") ||
       model.api.npm === "@ai-sdk/anthropic" ||
+      model.api.npm === "@ai-sdk/google-vertex" ||
+      model.api.npm === "@ai-sdk/google" ||
       model.api.npm === "@ai-sdk/alibaba") &&
     model.api.npm !== "@ai-sdk/gateway"
   ) {
@@ -847,6 +855,7 @@ export function options(input: {
   }
 
   if (input.model.api.npm === "@ai-sdk/google" || input.model.api.npm === "@ai-sdk/google-vertex") {
+    result["promptCacheKey"] = input.sessionID
     if (input.model.capabilities.reasoning) {
       result["thinkingConfig"] = {
         includeThoughts: true,

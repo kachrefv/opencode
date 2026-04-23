@@ -11,6 +11,7 @@ import { Git } from "@/git"
 import { Ripgrep } from "@/file/ripgrep"
 import { File } from "@/file"
 import { FileWatcher } from "@/file/watcher"
+import { Indexer } from "@/indexer/indexer"
 import { Storage } from "@/storage"
 import { Snapshot } from "@/snapshot"
 import { Plugin } from "@/plugin"
@@ -60,6 +61,7 @@ export const AppLayer = Layer.mergeAll(
   Ripgrep.defaultLayer,
   File.defaultLayer,
   FileWatcher.defaultLayer,
+  Indexer.defaultLayer,
   Storage.defaultLayer,
   Snapshot.defaultLayer,
   Plugin.defaultLayer,

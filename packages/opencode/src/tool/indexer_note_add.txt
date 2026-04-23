@@ -1,0 +1,3 @@
+- Attaches a persistent markdown note to a file in the codebase index.
+- Use this to store vital insights, document complex logic, explain structural decisions, or record assumptions that are not captured in code comments.
+- Proactively use this when you make structural changes, add new core logic, or discover implicit project constraints, helping future agents and users understand the codebase.

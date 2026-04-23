@@ -171,6 +171,7 @@ export function Prompt(props: PromptProps) {
     const cost = msg.reduce((sum, item) => sum + (item.role === "assistant" ? item.cost : 0), 0)
     return {
       context: pct ? `${Locale.number(tokens)} (${pct})` : Locale.number(tokens),
+      cache: last.tokens.cache.read > 0 ? Locale.number(last.tokens.cache.read) : undefined,
       cost: cost > 0 ? money.format(cost) : undefined,
     }
   })
@@ -1338,7 +1339,9 @@ export function Prompt(props: PromptProps) {
                     <Match when={usage()}>
                       {(item) => (
                         <text fg={theme.textMuted} wrapMode="none">
-                          {[item().context, item().cost].filter(Boolean).join(" · ")}
+                          {[item().context, item().cache ? `Cache: ${item().cache}` : undefined, item().cost]
+                            .filter(Boolean)
+                            .join(" · ")}
                         </text>
                       )}
                     </Match>

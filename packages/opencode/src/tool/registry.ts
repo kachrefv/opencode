@@ -1,4 +1,4 @@
-import { PlanExitTool } from "./plan"
+import { PlanExitTool, PlanEnterTool, PlanWriteTool, WalkthroughWriteTool } from "./plan"
 import { Session } from "../session"
 import { QuestionTool } from "./question"
 import { BashTool } from "./bash"
@@ -45,6 +45,14 @@ import { Bus } from "../bus"
 import { Agent } from "../agent/agent"
 import { Skill } from "../skill"
 import { Permission } from "@/permission"
+import { Indexer } from "../indexer/indexer"
+import { CodebaseMapTool } from "./codebase_map"
+import { IndexerNoteAddTool } from "./indexer_note_add"
+import { IndexerNoteSearchTool } from "./indexer_note_search"
+import { IndexerNoteListTool } from "./indexer_note_list"
+import { IndexerNoteUpdateTool } from "./indexer_note_update"
+import { IndexerNoteDeleteTool } from "./indexer_note_delete"
+import { BatchExecuteTool } from "./batch_execute"
 
 const log = Log.create({ service: "tool.registry" })
 
@@ -87,6 +95,7 @@ export const layer: Layer.Layer<
   | Ripgrep.Service
   | Format.Service
   | Truncate.Service
+  | Indexer.Service
 > = Layer.effect(
   Service,
   Effect.gen(function* () {
@@ -103,6 +112,9 @@ export const layer: Layer.Layer<
     const todo = yield* TodoWriteTool
     const lsptool = yield* LspTool
     const plan = yield* PlanExitTool
+    const plan_enter = yield* PlanEnterTool
+    const plan_write = yield* PlanWriteTool
+    const walkthrough_write = yield* WalkthroughWriteTool
     const webfetch = yield* WebFetchTool
     const websearch = yield* WebSearchTool
     const bash = yield* BashTool
@@ -113,6 +125,13 @@ export const layer: Layer.Layer<
     const greptool = yield* GrepTool
     const patchtool = yield* ApplyPatchTool
     const skilltool = yield* SkillTool
+    const codebasemap = yield* CodebaseMapTool
+    const indexernoteadd = yield* IndexerNoteAddTool
+    const indexernotesearch = yield* IndexerNoteSearchTool
+    const indexernotelist = yield* IndexerNoteListTool
+    const indexernoteupdate = yield* IndexerNoteUpdateTool
+    const indexernotedelete = yield* IndexerNoteDeleteTool
+    const batchexecutetool = yield* BatchExecuteTool
     const agent = yield* Agent.Service
 
     const state = yield* InstanceState.make<State>(
@@ -194,6 +213,16 @@ export const layer: Layer.Layer<
           question: Tool.init(question),
           lsp: Tool.init(lsptool),
           plan: Tool.init(plan),
+          plan_enter: Tool.init(plan_enter),
+          plan_write: Tool.init(plan_write),
+          walkthrough_write: Tool.init(walkthrough_write),
+          codebase_map: Tool.init(codebasemap),
+          indexer_note_add: Tool.init(indexernoteadd),
+          indexer_note_search: Tool.init(indexernotesearch),
+          indexer_note_list: Tool.init(indexernotelist),
+          indexer_note_update: Tool.init(indexernoteupdate),
+          indexer_note_delete: Tool.init(indexernotedelete),
+          batch_execute: Tool.init(batchexecutetool),
         })
 
         return {
@@ -214,8 +243,15 @@ export const layer: Layer.Layer<
             tool.code,
             tool.skill,
             tool.patch,
+            tool.codebase_map,
+            tool.indexer_note_add,
+            tool.indexer_note_search,
+            tool.indexer_note_list,
+            tool.indexer_note_update,
+            tool.indexer_note_delete,
+            tool.batch_execute,
             ...(Flag.OPENCODE_EXPERIMENTAL_LSP_TOOL ? [tool.lsp] : []),
-            ...(Flag.OPENCODE_EXPERIMENTAL_PLAN_MODE && Flag.OPENCODE_CLIENT === "cli" ? [tool.plan] : []),
+            ...(Flag.OPENCODE_CLIENT === "cli" ? [tool.plan, tool.plan_enter, tool.plan_write, tool.walkthrough_write] : []),
           ],
           task: tool.task,
           read: tool.read,
@@ -335,5 +371,6 @@ export const defaultLayer = Layer.suspend(() =>
     Layer.provide(CrossSpawnSpawner.defaultLayer),
     Layer.provide(Ripgrep.defaultLayer),
     Layer.provide(Truncate.defaultLayer),
+    Layer.provide(Indexer.defaultLayer),
   ),
 )

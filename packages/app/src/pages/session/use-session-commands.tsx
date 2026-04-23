@@ -124,6 +124,7 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
   const terminalCommand = withCategory(language.t("command.category.terminal"))
   const modelCommand = withCategory(language.t("command.category.model"))
   const mcpCommand = withCategory(language.t("command.category.mcp"))
+  const skillCommand = withCategory(language.t("command.category.skill"))
   const agentCommand = withCategory(language.t("command.category.agent"))
   const permissionsCommand = withCategory(language.t("command.category.permissions"))
 
@@ -265,6 +266,12 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
   const chooseMcp = () => {
     void import("@/components/dialog-select-mcp").then((x) => {
       dialog.show(() => <x.DialogSelectMcp />)
+    })
+  }
+
+  const chooseSkill = () => {
+    void import("@/components/dialog-select-skill").then((x) => {
+      dialog.show(() => <x.DialogSelectSkill />)
     })
   }
 
@@ -541,6 +548,16 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
     }),
   ]
 
+  const skillCmds = () => [
+    skillCommand({
+      id: "skill.toggle",
+      title: language.t("command.skill.toggle"),
+      description: language.t("command.skill.toggle.description"),
+      slash: "skills",
+      onSelect: chooseSkill,
+    }),
+  ]
+
   const agentCmds = () => [
     agentCommand({
       id: "agent.cycle",
@@ -578,10 +595,11 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
     ...contextCmds(),
     ...viewCmds(),
     ...terminalCmds(),
-    ...messageCmds(),
-    ...modelCmds(),
-    ...mcpCmds(),
-    ...agentCmds(),
-    ...permissionsCmds(),
+      ...messageCmds(),
+      ...modelCmds(),
+      ...mcpCmds(),
+      ...skillCmds(),
+      ...agentCmds(),
+      ...permissionsCmds(),
   ])
 }

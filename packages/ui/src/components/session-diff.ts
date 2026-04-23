@@ -46,7 +46,11 @@ function patch(diff: ReviewDiff) {
       }
     }
 
-    return { before: beforeLines.join("\n"), after: afterLines.join("\n"), patch: diff.patch }
+    return {
+      before: beforeLines.length > 0 ? beforeLines.join("\n") + "\n" : "",
+      after: afterLines.length > 0 ? afterLines.join("\n") + "\n" : "",
+      patch: diff.patch,
+    }
   }
   return {
     before: "before" in diff && typeof diff.before === "string" ? diff.before : "",

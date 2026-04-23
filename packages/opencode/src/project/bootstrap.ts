@@ -10,6 +10,7 @@ import { Command } from "../command"
 import { Instance } from "./instance"
 import { Log } from "@/util"
 import { FileWatcher } from "@/file/watcher"
+import { Indexer } from "@/indexer/indexer"
 import { ShareNext } from "@/share"
 import * as Effect from "effect/Effect"
 import { Config } from "@/config"
@@ -27,6 +28,7 @@ export const InstanceBootstrap = Effect.gen(function* () {
       Format.Service,
       File.Service,
       FileWatcher.Service,
+      Indexer.Service,
       Vcs.Service,
       Snapshot.Service,
     ].map((s) => Effect.forkDetach(s.use((i) => i.init()))),

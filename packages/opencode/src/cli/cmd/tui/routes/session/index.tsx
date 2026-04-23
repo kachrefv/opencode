@@ -49,6 +49,7 @@ import type { WebSearchTool } from "@/tool/websearch"
 import type { TaskTool } from "@/tool/task"
 import type { QuestionTool } from "@/tool/question"
 import type { SkillTool } from "@/tool/skill"
+import type { PlanWriteTool, WalkthroughWriteTool } from "@/tool/plan"
 import { useKeyboard, useRenderer, useTerminalDimensions, type JSX } from "@opentui/solid"
 import { useSDK } from "@tui/context/sdk"
 import { useCommandDialog } from "@tui/component/dialog-command"
@@ -157,7 +158,7 @@ export function Session() {
   const [sidebar, setSidebar] = kv.signal<"auto" | "hide">("sidebar", "auto")
   const [sidebarOpen, setSidebarOpen] = createSignal(false)
   const [conceal, setConceal] = createSignal(true)
-  const [showThinking, setShowThinking] = kv.signal("thinking_visibility", true)
+  const [showThinking, setShowThinking] = kv.signal("thinking_visibility", tuiConfig.thinking ?? true)
   const [timestamps, setTimestamps] = kv.signal<"hide" | "show">("timestamps", "hide")
   const [showDetails, setShowDetails] = kv.signal("tool_details_visibility", true)
   const [showAssistantMetadata, _setShowAssistantMetadata] = kv.signal("assistant_metadata_visibility", true)
@@ -1583,6 +1584,12 @@ function ResolvedTool(props: ToolProps<any>) {
       <Match when={props.part.tool === "apply_patch"}>
         <ApplyPatch {...props} />
       </Match>
+      <Match when={props.part.tool === "plan_write"}>
+        <PlanWrite {...props} />
+      </Match>
+      <Match when={props.part.tool === "walkthrough_write"}>
+        <WalkthroughWrite {...props} />
+      </Match>
       <Match when={props.part.tool === "todowrite"}>
         <TodoWrite {...props} />
       </Match>
@@ -2252,6 +2259,96 @@ function TodoWrite(props: ToolProps<typeof TodoWriteTool>) {
       <Match when={true}>
         <InlineTool icon="⚙" pending="Updating todos..." complete={false} part={props.part}>
           Updating todos...
+        </InlineTool>
+      </Match>
+    </Switch>
+  )
+}
+
+function PlanWrite(props: ToolProps<typeof PlanWriteTool>) {
+  const ctx = use()
+  const { theme, syntax } = useTheme()
+  const content = createMemo(() => props.input.content ?? "")
+
+  return (
+    <Switch>
+      <Match when={content().trim()}>
+        <BlockTool title="# Implementation Plan" part={props.part}>
+          <box paddingLeft={3} marginTop={1}>
+            <Switch>
+              <Match when={Flag.OPENCODE_EXPERIMENTAL_MARKDOWN}>
+                <markdown
+                  syntaxStyle={syntax()}
+                  streaming={true}
+                  content={content()}
+                  conceal={ctx.conceal()}
+                  fg={theme.markdownText}
+                  bg={theme.background}
+                />
+              </Match>
+              <Match when={!Flag.OPENCODE_EXPERIMENTAL_MARKDOWN}>
+                <code
+                  filetype="markdown"
+                  drawUnstyledText={false}
+                  streaming={true}
+                  syntaxStyle={syntax()}
+                  content={content()}
+                  conceal={ctx.conceal()}
+                  fg={theme.text}
+                />
+              </Match>
+            </Switch>
+          </box>
+        </BlockTool>
+      </Match>
+      <Match when={true}>
+        <InlineTool icon="📝" pending="Writing plan..." complete={false} part={props.part}>
+          Writing plan...
+        </InlineTool>
+      </Match>
+    </Switch>
+  )
+}
+
+function WalkthroughWrite(props: ToolProps<typeof WalkthroughWriteTool>) {
+  const ctx = use()
+  const { theme, syntax } = useTheme()
+  const content = createMemo(() => props.input.content ?? "")
+
+  return (
+    <Switch>
+      <Match when={content().trim()}>
+        <BlockTool title="# Walkthrough" part={props.part}>
+          <box paddingLeft={3} marginTop={1}>
+            <Switch>
+              <Match when={Flag.OPENCODE_EXPERIMENTAL_MARKDOWN}>
+                <markdown
+                  syntaxStyle={syntax()}
+                  streaming={true}
+                  content={content()}
+                  conceal={ctx.conceal()}
+                  fg={theme.markdownText}
+                  bg={theme.background}
+                />
+              </Match>
+              <Match when={!Flag.OPENCODE_EXPERIMENTAL_MARKDOWN}>
+                <code
+                  filetype="markdown"
+                  drawUnstyledText={false}
+                  streaming={true}
+                  syntaxStyle={syntax()}
+                  content={content()}
+                  conceal={ctx.conceal()}
+                  fg={theme.text}
+                />
+              </Match>
+            </Switch>
+          </box>
+        </BlockTool>
+      </Match>
+      <Match when={true}>
+        <InlineTool icon="📝" pending="Writing walkthrough..." complete={false} part={props.part}>
+          Writing walkthrough...
         </InlineTool>
       </Match>
     </Switch>

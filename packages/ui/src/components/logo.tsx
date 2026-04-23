@@ -7,6 +7,7 @@ export const Mark = (props: { class?: string }) => {
       src="https://i.ibb.co/HfQMWzmM/icon.png"
       alt="Logo"
       classList={{ [props.class ?? ""]: !!props.class }}
+      style={{ "object-fit": "contain", "aspect-ratio": "1/1" }}
     />
   )
 }
@@ -19,6 +20,7 @@ export const Splash = (props: Pick<ComponentProps<"img">, "ref" | "class">) => {
       src="https://i.ibb.co/HfQMWzmM/icon.png"
       alt="Logo Splash"
       classList={{ [props.class ?? ""]: !!props.class }}
+      style={{ "object-fit": "contain", "aspect-ratio": "1/1" }}
     />
   )
 }
@@ -29,6 +31,7 @@ export const Logo = (props: { class?: string }) => {
       src="https://i.ibb.co/HfQMWzmM/icon.png"
       alt="Logo Wordmark"
       classList={{ [props.class ?? ""]: !!props.class }}
+      style={{ "object-fit": "contain", "aspect-ratio": "1/1" }}
     />
   )
 }

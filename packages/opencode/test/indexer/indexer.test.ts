@@ -79,6 +79,16 @@ describe("Indexer", () => {
 
         const searchByTag = yield* indexer.searchNotes("", ["test"])
         expect(searchByTag.length).toBe(1)
+
+        const noteId = notes[0].id
+        yield* indexer.updateNote(noteId, "Updated note content", ["test", "updated"])
+        const updatedNotes = yield* indexer.listNotes(filePath)
+        expect(updatedNotes[0].content).toBe("Updated note content")
+        expect(updatedNotes[0].tags).toEqual(["test", "updated"])
+
+        yield* indexer.deleteNote(noteId)
+        const deletedNotes = yield* indexer.listNotes(filePath)
+        expect(deletedNotes.length).toBe(0)
       })
     )
   )

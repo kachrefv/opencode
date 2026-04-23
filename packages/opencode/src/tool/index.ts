@@ -1,3 +1,6 @@
 export * as Truncate from "./truncate"
 export * as ToolRegistry from "./registry"
 export * as Tool from "./tool"
+export * as IndexerNoteUpdateTool from "./indexer_note_update"
+export * as IndexerNoteDeleteTool from "./indexer_note_delete"
+export * as PlanEnterTool from "./plan"

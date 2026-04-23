@@ -86,6 +86,7 @@ export const layer = Layer.effect(
 
         const defaults = Permission.fromConfig({
           "*": "allow",
+          batch_execute: "allow",
           doom_loop: "ask",
           external_directory: {
             "*": "ask",
@@ -94,10 +95,14 @@ export const layer = Layer.effect(
           question: "deny",
           plan_enter: "deny",
           plan_exit: "deny",
-          indexer_map: "allow",
+          plan_write: "deny",
+          walkthrough_write: "deny",
+          codebase_map: "allow",
           indexer_note_add: "allow",
           indexer_note_search: "allow",
           indexer_note_list: "allow",
+          indexer_note_update: "allow",
+          indexer_note_delete: "allow",
           // mirrors github.com/github/gitignore Node.gitignore pattern for .env files
           read: {
             "*": "allow",
@@ -119,6 +124,8 @@ export const layer = Layer.effect(
               Permission.fromConfig({
                 question: "allow",
                 plan_enter: "allow",
+                plan_write: "allow",
+                walkthrough_write: "allow",
               }),
               user,
             ),
@@ -134,6 +141,8 @@ export const layer = Layer.effect(
               Permission.fromConfig({
                 question: "allow",
                 plan_exit: "allow",
+                plan_write: "allow",
+                walkthrough_write: "allow",
                 external_directory: {
                   [path.join(Global.Path.data, "plans", "*")]: "allow",
                 },
@@ -168,6 +177,7 @@ export const layer = Layer.effect(
               defaults,
               Permission.fromConfig({
                 "*": "deny",
+                batch_execute: "allow",
                 grep: "allow",
                 glob: "allow",
                 list: "allow",
@@ -175,7 +185,7 @@ export const layer = Layer.effect(
                 webfetch: "allow",
                 websearch: "allow",
                 codesearch: "allow",
-                indexer_map: "allow",
+                codebase_map: "allow",
                 indexer_note_search: "allow",
                 indexer_note_list: "allow",
                 read: "allow",

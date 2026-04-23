@@ -27,7 +27,7 @@ const channel = (() => {
 })()
 
 const getBase = (): Configuration => ({
-  artifactName: "opencode-electron-${os}-${arch}.${ext}",
+  artifactName: "carthis-electron-${os}-${arch}.${ext}",
   directories: {
     output: "dist",
     buildResources: "resources",
@@ -54,8 +54,8 @@ const getBase = (): Configuration => ({
     sign: true,
   },
   protocols: {
-    name: "OpenCode",
-    schemes: ["opencode"],
+    name: "Carthis",
+    schemes: ["carthis"],
   },
   win: {
     icon: `resources/icons/icon.ico`,
@@ -84,29 +84,29 @@ function getConfig() {
     case "dev": {
       return {
         ...base,
-        appId: "ai.opencode.desktop.dev",
-        productName: "OpenCode Dev",
-        rpm: { packageName: "opencode-dev" },
+        appId: "ai.carthis.desktop.dev",
+        productName: "Carthis Dev",
+        rpm: { packageName: "carthis-dev" },
       }
     }
     case "beta": {
       return {
         ...base,
-        appId: "ai.opencode.desktop.beta",
-        productName: "OpenCode Beta",
-        protocols: { name: "OpenCode Beta", schemes: ["opencode"] },
-        publish: { provider: "github", owner: "anomalyco", repo: "opencode-beta", channel: "latest" },
-        rpm: { packageName: "opencode-beta" },
+        appId: "ai.carthis.desktop.beta",
+        productName: "Carthis Beta",
+        protocols: { name: "Carthis Beta", schemes: ["carthis"] },
+        publish: { provider: "github", owner: "anomalyco", repo: "carthis-beta", channel: "latest" },
+        rpm: { packageName: "carthis-beta" },
       }
     }
     case "prod": {
       return {
         ...base,
-        appId: "ai.opencode.desktop",
-        productName: "OpenCode",
-        protocols: { name: "OpenCode", schemes: ["opencode"] },
-        publish: { provider: "github", owner: "anomalyco", repo: "opencode", channel: "latest" },
-        rpm: { packageName: "opencode" },
+        appId: "ai.carthis.desktop",
+        productName: "Carthis",
+        protocols: { name: "Carthis", schemes: ["carthis"] },
+        publish: { provider: "github", owner: "anomalyco", repo: "carthis", channel: "latest" },
+        rpm: { packageName: "carthis" },
       }
     }
   }

@@ -284,7 +284,7 @@ export function Session() {
         `${logo[3] ?? ""}`,
         ``,
         `  ${weak("Session")}${UI.Style.TEXT_NORMAL_BOLD}${title}${UI.Style.TEXT_NORMAL}`,
-        `  ${weak("Continue")}${UI.Style.TEXT_NORMAL_BOLD}opencode -s ${session()?.id}${UI.Style.TEXT_NORMAL}`,
+        `  ${weak("Continue")}${UI.Style.TEXT_NORMAL_BOLD}carthis -s ${session()?.id}${UI.Style.TEXT_NORMAL}`,
         ``,
       ].join("\n"),
     )
@@ -1539,54 +1539,137 @@ function ToolPart(props: { last: boolean; part: ToolPart; message: AssistantMess
 
   return (
     <Show when={!shouldHide()}>
-      <Switch>
-        <Match when={props.part.tool === "bash"}>
-          <Bash {...toolprops} />
-        </Match>
-        <Match when={props.part.tool === "glob"}>
-          <Glob {...toolprops} />
-        </Match>
-        <Match when={props.part.tool === "read"}>
-          <Read {...toolprops} />
-        </Match>
-        <Match when={props.part.tool === "grep"}>
-          <Grep {...toolprops} />
-        </Match>
-        <Match when={props.part.tool === "webfetch"}>
-          <WebFetch {...toolprops} />
-        </Match>
-        <Match when={props.part.tool === "codesearch"}>
-          <CodeSearch {...toolprops} />
-        </Match>
-        <Match when={props.part.tool === "websearch"}>
-          <WebSearch {...toolprops} />
-        </Match>
-        <Match when={props.part.tool === "write"}>
-          <Write {...toolprops} />
-        </Match>
-        <Match when={props.part.tool === "edit"}>
-          <Edit {...toolprops} />
-        </Match>
-        <Match when={props.part.tool === "task"}>
-          <Task {...toolprops} />
-        </Match>
-        <Match when={props.part.tool === "apply_patch"}>
-          <ApplyPatch {...toolprops} />
-        </Match>
-        <Match when={props.part.tool === "todowrite"}>
-          <TodoWrite {...toolprops} />
-        </Match>
-        <Match when={props.part.tool === "question"}>
-          <Question {...toolprops} />
-        </Match>
-        <Match when={props.part.tool === "skill"}>
-          <Skill {...toolprops} />
-        </Match>
-        <Match when={true}>
-          <GenericTool {...toolprops} />
-        </Match>
-      </Switch>
+      <ResolvedTool {...toolprops} />
     </Show>
+  )
+}
+
+function ResolvedTool(props: ToolProps<any>) {
+  return (
+    <Switch>
+      <Match when={props.part.tool === "bash"}>
+        <Bash {...props} />
+      </Match>
+      <Match when={props.part.tool === "batch_execute"}>
+        <BatchExecute {...props} />
+      </Match>
+      <Match when={props.part.tool === "glob"}>
+        <Glob {...props} />
+      </Match>
+      <Match when={props.part.tool === "read"}>
+        <Read {...props} />
+      </Match>
+      <Match when={props.part.tool === "grep"}>
+        <Grep {...props} />
+      </Match>
+      <Match when={props.part.tool === "webfetch"}>
+        <WebFetch {...props} />
+      </Match>
+      <Match when={props.part.tool === "codesearch"}>
+        <CodeSearch {...props} />
+      </Match>
+      <Match when={props.part.tool === "websearch"}>
+        <WebSearch {...props} />
+      </Match>
+      <Match when={props.part.tool === "write"}>
+        <Write {...props} />
+      </Match>
+      <Match when={props.part.tool === "edit"}>
+        <Edit {...props} />
+      </Match>
+      <Match when={props.part.tool === "task"}>
+        <Task {...props} />
+      </Match>
+      <Match when={props.part.tool === "apply_patch"}>
+        <ApplyPatch {...props} />
+      </Match>
+      <Match when={props.part.tool === "todowrite"}>
+        <TodoWrite {...props} />
+      </Match>
+      <Match when={props.part.tool === "question"}>
+        <Question {...props} />
+      </Match>
+      <Match when={props.part.tool === "skill"}>
+        <Skill {...props} />
+      </Match>
+      <Match when={true}>
+        <GenericTool {...props} />
+      </Match>
+    </Switch>
+  )
+}
+
+function BatchExecute(props: ToolProps<any>) {
+  const calls = createMemo(() => {
+    return Array.isArray((props.input as any).calls) ? (props.input as any).calls : []
+  })
+
+  const results = createMemo(() => {
+    if (!props.output) return []
+    try {
+      const res = JSON.parse(props.output)
+      return Array.isArray(res) ? res : []
+    } catch {
+      return []
+    }
+  })
+
+  return (
+    <box flexDirection="column">
+      <For each={calls()}>
+        {(call: any, index) => {
+          const res = createMemo(() => results().find((r: any) => r.index === index()))
+          const subProps = {
+            get input() { return call.parameters ?? {} },
+            get metadata() { return res()?.metadata ?? {} },
+            get output() { return res()?.result },
+            get tool() { return call.tool },
+            get permission() { return props.permission },
+            get part() {
+              return new Proxy(props.part, {
+                get(target, prop) {
+                  if (prop === "state") {
+                    return new Proxy(target.state, {
+                      get(stateTarget, stateProp) {
+                        if (stateProp === "status") {
+                          const result = res()
+                          if (result) {
+                            return result.error ? "error" : "completed"
+                          }
+                          return target.state.status
+                        }
+                        if (stateProp === "error") {
+                          const result = res()
+                          if (result && result.error) return result.error
+                          return (stateTarget as any).error
+                        }
+                        if (stateProp === "metadata") {
+                          const result = res()
+                          if (result && result.metadata) return result.metadata
+                          return (stateTarget as any).metadata
+                        }
+                        if (stateProp === "output") {
+                          const result = res()
+                          if (result && result.result) return result.result
+                          return (stateTarget as any).output
+                        }
+                        if (stateProp === "input") {
+                          return call.parameters ?? {}
+                        }
+                        return (stateTarget as any)[stateProp]
+                      }
+                    })
+                  }
+                  if (prop === "tool") return call.tool
+                  return (target as any)[prop]
+                }
+              })
+            }
+          }
+          return <ResolvedTool {...subProps} />
+        }}
+      </For>
+    </box>
   )
 }
 
@@ -1997,7 +2080,8 @@ function Task(props: ToolProps<typeof TaskTool>) {
       if (current()) {
         const state = current()!.state
         const title = state.status === "running" || state.status === "completed" ? state.title : undefined
-        content.push(`↳ ${Locale.titlecase(current()!.tool)} ${title}`)
+        const toolName = current()!.tool === "batch_execute" ? "Parallel Actions" : `${Locale.titlecase(current()!.tool)} ${title ?? ""}`.trim()
+        content.push(`↳ ${toolName}`)
       } else content.push(`↳ ${tools().length} toolcalls`)
     }
 

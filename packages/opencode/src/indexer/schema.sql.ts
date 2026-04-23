@@ -32,3 +32,8 @@ export const IndexerNoteTable = sqliteTable(
     index("indexer_note_workspace_file_idx").on(table.workspace, table.file_path),
   ],
 )
+
+export const IndexerFtsTable = sqliteTable("indexer_fts", {
+  id: text().primaryKey(),
+  content: text().notNull(),
+})

@@ -362,6 +362,14 @@ export function getToolInfo(tool: string, input: any = {}): ToolInfo {
         title: i18n.t("ui.tool.codesearch"),
         subtitle: input.query,
       }
+    case "batch_execute":
+      return {
+        icon: "mcp",
+        title: i18n.t("ui.tool.batch_execute"),
+        subtitle: input.calls?.length
+          ? `${input.calls.length} ${i18n.t(input.calls.length > 1 ? "ui.common.tool.other" : "ui.common.tool.one")}`
+          : undefined,
+      }
     case "task": {
       const type =
         typeof input.subagent_type === "string" && input.subagent_type
@@ -1633,6 +1641,84 @@ ToolRegistry.register({
             <Markdown text={props.output!} />
           </div>
         </Show>
+      </BasicTool>
+    )
+  },
+})
+
+ToolRegistry.register({
+  name: "batch_execute",
+  render(props) {
+    const i18n = useI18n()
+    const calls = createMemo(() => {
+      return Array.isArray(props.input.calls) ? props.input.calls : []
+    })
+
+    const results = createMemo(() => {
+      if (!props.output) return []
+      try {
+        const res = JSON.parse(props.output)
+        return Array.isArray(res) ? res : []
+      } catch {
+        return []
+      }
+    })
+
+    return (
+      <BasicTool
+        {...props}
+        icon="mcp"
+        trigger={{
+          title: i18n.t("ui.tool.batch_execute"),
+          subtitle: calls().length
+            ? `${calls().length} ${i18n.t(calls().length > 1 ? "ui.common.tool.other" : "ui.common.tool.one")}`
+            : undefined,
+        }}
+      >
+        <div data-component="batch-execute-tool">
+          <For each={calls()}>
+            {(call: any, index) => {
+              const res = createMemo(() => results().find((r: any) => r.index === index()))
+              const render = createMemo(() => ToolRegistry.render(call.tool) ?? GenericTool)
+              const status = createMemo(() => {
+                const result = res()
+                if (result) {
+                  return result.error ? "error" : "completed"
+                }
+                return props.status
+              })
+
+              return (
+                <div data-slot="batch-execute-item">
+                  <Switch>
+                    <Match when={status() === "error" && res()?.error}>
+                      {(error) => (
+                        <ToolErrorCard
+                          tool={call.tool}
+                          error={error()}
+                          defaultOpen={props.defaultOpen}
+                          subtitle={call.parameters?.description}
+                        />
+                      )}
+                    </Match>
+                    <Match when={true}>
+                      <Dynamic
+                        component={render()}
+                        input={call.parameters ?? {}}
+                        tool={call.tool}
+                        metadata={res()?.metadata ?? {}}
+                        output={res()?.result}
+                        status={status()}
+                        hideDetails={props.hideDetails}
+                        defaultOpen={props.defaultOpen}
+                      />
+                    </Match>
+                  </Switch>
+                </div>
+              )
+            }}
+          </For>
+        </div>
       </BasicTool>
     )
   },

@@ -70,16 +70,46 @@ describe("ProviderTransform.options - setCacheKey", () => {
   })
 
   test("should set promptCacheKey for openai provider regardless of setCacheKey", () => {
-    const openaiModel = {
-      ...mockModel,
+    const sessionID = "test-session"
+    const model = {
       providerID: "openai",
-      api: {
-        id: "gpt-4",
-        url: "https://api.openai.com",
-        npm: "@ai-sdk/openai",
-      },
-    }
-    const result = ProviderTransform.options({ model: openaiModel, sessionID, providerOptions: {} })
+      api: { npm: "@ai-sdk/openai", id: "gpt-4o" },
+    } as any
+    const result = ProviderTransform.options({
+      model,
+      sessionID,
+      providerOptions: {},
+    })
+    expect(result.promptCacheKey).toBe(sessionID)
+  })
+
+  test("should set promptCacheKey for google provider", () => {
+    const sessionID = "test-session"
+    const model = {
+      providerID: "google",
+      api: { npm: "@ai-sdk/google", id: "gemini-1.5-pro" },
+      capabilities: { reasoning: false }
+    } as any
+    const result = ProviderTransform.options({
+      model,
+      sessionID,
+      providerOptions: {},
+    })
+    expect(result.promptCacheKey).toBe(sessionID)
+  })
+
+  test("should set promptCacheKey for google-vertex provider", () => {
+    const sessionID = "test-session"
+    const model = {
+      providerID: "google-vertex",
+      api: { npm: "@ai-sdk/google-vertex", id: "gemini-1.5-pro" },
+      capabilities: { reasoning: false }
+    } as any
+    const result = ProviderTransform.options({
+      model,
+      sessionID,
+      providerOptions: {},
+    })
     expect(result.promptCacheKey).toBe(sessionID)
   })
 
@@ -1967,6 +1997,16 @@ describe("ProviderTransform.message - cache control on gateway", () => {
           type: "ephemeral",
         },
       },
+      google: {
+        cacheControl: {
+          type: "ephemeral",
+        },
+      },
+      vertex: {
+        cacheControl: {
+          type: "ephemeral",
+        },
+      },
     })
   })
 
@@ -2020,6 +2060,83 @@ describe("ProviderTransform.message - cache control on gateway", () => {
         },
       },
       alibaba: {
+        cacheControl: {
+          type: "ephemeral",
+        },
+      },
+      google: {
+        cacheControl: {
+          type: "ephemeral",
+        },
+      },
+      vertex: {
+        cacheControl: {
+          type: "ephemeral",
+        },
+      },
+    })
+  })
+
+  test("google-vertex applies cache control", () => {
+    const model = createModel({
+      providerID: "google-vertex",
+      api: {
+        id: "google-vertex",
+        url: "https://us-central1-aiplatform.googleapis.com",
+        npm: "@ai-sdk/google-vertex",
+      },
+      id: "gemini-3.5-sonnet",
+    })
+    const msgs = [
+      {
+        role: "system",
+        content: "You are a helpful assistant",
+      },
+      {
+        role: "user",
+        content: "Hello",
+      },
+    ] as any[]
+
+    const result = ProviderTransform.message(msgs, model, {}) as any[]
+
+    expect(result[0].providerOptions).toEqual({
+      anthropic: {
+        cacheControl: {
+          type: "ephemeral",
+        },
+      },
+      openrouter: {
+        cacheControl: {
+          type: "ephemeral",
+        },
+      },
+      bedrock: {
+        cachePoint: {
+          type: "default",
+        },
+      },
+      openaiCompatible: {
+        cache_control: {
+          type: "ephemeral",
+        },
+      },
+      copilot: {
+        copilot_cache_control: {
+          type: "ephemeral",
+        },
+      },
+      alibaba: {
+        cacheControl: {
+          type: "ephemeral",
+        },
+      },
+      google: {
+        cacheControl: {
+          type: "ephemeral",
+        },
+      },
+      vertex: {
         cacheControl: {
           type: "ephemeral",
         },

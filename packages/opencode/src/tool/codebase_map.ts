@@ -1,11 +1,11 @@
 import z from "zod"
 import { Effect } from "effect"
 import { Indexer } from "../indexer/indexer"
-import DESCRIPTION from "./indexer_map.txt"
+import DESCRIPTION from "./codebase_map.txt"
 import * as Tool from "./tool"
 
-export const IndexerMapTool = Tool.define(
-  "indexer_map",
+export const CodebaseMapTool = Tool.define(
+  "codebase_map",
   Effect.gen(function* () {
     const indexer = yield* Indexer.Service
 

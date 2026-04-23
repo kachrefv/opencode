@@ -7,7 +7,7 @@ import { Process } from "@/util"
 
 export const PrCommand = cmd({
   command: "pr <number>",
-  describe: "fetch and checkout a GitHub PR branch, then run opencode",
+  describe: "fetch and checkout a GitHub PR branch, then run carthis",
   builder: (yargs) =>
     yargs.positional("number", {
       type: "number",
@@ -98,7 +98,7 @@ export const PrCommand = cmd({
               const sessionMatch = prInfo.body.match(/https:\/\/opncd\.ai\/s\/([a-zA-Z0-9_-]+)/)
               if (sessionMatch) {
                 const sessionUrl = sessionMatch[0]
-                UI.println(`Found opencode session: ${sessionUrl}`)
+                UI.println(`Found carthis session: ${sessionUrl}`)
                 UI.println(`Importing session...`)
 
                 const importResult = await Process.text(["opencode", "import", sessionUrl], {
@@ -120,7 +120,7 @@ export const PrCommand = cmd({
 
         UI.println(`Successfully checked out PR #${prNumber} as branch '${localBranchName}'`)
         UI.println()
-        UI.println("Starting opencode...")
+        UI.println("Starting carthis...")
         UI.println()
 
         const opencodeArgs = sessionId ? ["-s", sessionId] : []
@@ -131,7 +131,7 @@ export const PrCommand = cmd({
           cwd: process.cwd(),
         })
         const code = await opencodeProcess.exited
-        if (code !== 0) throw new Error(`opencode exited with code ${code}`)
+        if (code !== 0) throw new Error(`carthis exited with code ${code}`)
       },
     })
   },

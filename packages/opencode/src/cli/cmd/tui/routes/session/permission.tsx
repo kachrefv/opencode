@@ -162,11 +162,11 @@ export function PermissionPrompt(props: { request: PermissionRequest }) {
           body={
             <Switch>
               <Match when={props.request.always.length === 1 && props.request.always[0] === "*"}>
-                <TextBody title={"This will allow " + props.request.permission + " until OpenCode is restarted."} />
+                <TextBody title={"This will allow " + props.request.permission + " until Carthis is restarted."} />
               </Match>
               <Match when={true}>
                 <box paddingLeft={1} gap={1}>
-                  <text fg={theme.textMuted}>This will allow the following patterns until OpenCode is restarted</text>
+                  <text fg={theme.textMuted}>This will allow the following patterns until Carthis is restarted</text>
                   <box>
                     <For each={props.request.always}>
                       {(pattern) => (
@@ -211,30 +211,73 @@ export function PermissionPrompt(props: { request: PermissionRequest }) {
       </Match>
       <Match when={store.stage === "permission"}>
         {(() => {
-          const info = () => {
-            const permission = props.request.permission
-            const data = input()
-
+          const resolveInfo = (permission: string, data: any) => {
             if (permission === "edit") {
-              const raw = props.request.metadata?.filepath
-              const filepath = typeof raw === "string" ? raw : ""
+              const diff = typeof data.diff === "string" ? data.diff : ""
               return {
-                icon: "→",
-                title: `Edit ${normalizePath(filepath)}`,
+                icon: "✎",
+                title: `Edit ${normalizePath(data.filePath)}`,
                 body: <EditBody request={props.request} />,
               }
             }
 
-            if (permission === "read") {
-              const raw = data.filePath
-              const filePath = typeof raw === "string" ? raw : ""
+            if (permission === "apply_patch") {
+              const diff = typeof data.diff === "string" ? data.diff : ""
               return {
-                icon: "→",
-                title: `Read ${normalizePath(filePath)}`,
+                icon: "✎",
+                title: `Apply Patch ${normalizePath(data.filePath)}`,
+                body: <EditBody request={props.request} />,
+              }
+            }
+
+            if (permission === "indexer_note_add") {
+              return {
+                icon: "✎",
+                title: `Attach note to ${normalizePath(data.filePath)}`,
+                body: <TextBody title={data.content} />,
+              }
+            }
+
+            if (permission === "indexer_note_update") {
+              return {
+                icon: "✎",
+                title: `Update note ${data.id}`,
+                body: <TextBody title={data.content} />,
+              }
+            }
+
+            if (permission === "indexer_note_delete") {
+              return {
+                icon: "✖",
+                title: `Delete note ${data.id}`,
+                body: <></>,
+              }
+            }
+
+            if (permission === "write") {
+              const content = typeof data.content === "string" ? data.content : ""
+              return {
+                icon: "✚",
+                title: `Create ${normalizePath(data.filePath)}`,
                 body: (
-                  <Show when={filePath}>
+                  <Show when={content}>
                     <box paddingLeft={1}>
-                      <text fg={theme.textMuted}>{"Path: " + normalizePath(filePath)}</text>
+                      <text fg={theme.textMuted}>{content.split("\n").length + " lines"}</text>
+                    </box>
+                  </Show>
+                ),
+              }
+            }
+
+            if (permission === "read") {
+              const file = typeof data.filePath === "string" ? data.filePath : ""
+              return {
+                icon: "○",
+                title: `Read ${normalizePath(file)}`,
+                body: (
+                  <Show when={file}>
+                    <box paddingLeft={1}>
+                      <text fg={theme.textMuted}>{"File: " + file}</text>
                     </box>
                   </Show>
                 ),
@@ -365,6 +408,40 @@ export function PermissionPrompt(props: { request: PermissionRequest }) {
               }
             }
 
+            if (permission === "batch_execute") {
+              const calls = Array.isArray(data.calls) ? data.calls : []
+              return {
+                icon: "≈",
+                title: `Parallel Execution (${calls.length} tools)`,
+                body: (
+                  <Show when={calls.length > 0}>
+                    <box paddingLeft={1} flexDirection="column" gap={1}>
+                      <For each={calls.slice(0, 5)}>
+                        {(call: any) => {
+                          const callInfo = resolveInfo(call.tool, call.parameters)
+                          return (
+                            <box flexDirection="column">
+                              <box flexDirection="row" gap={1}>
+                                <text fg={theme.textMuted} flexShrink={0}>{callInfo.icon}</text>
+                                <text fg={theme.text}>{callInfo.title}</text>
+                              </box>
+                              <box paddingLeft={1}>
+                                {callInfo.body}
+                              </box>
+                            </box>
+                          )
+                        }}
+                      </For>
+                      <Show when={calls.length > 5}>
+                        <text fg={theme.textMuted}>{`... and ${calls.length - 5} more tools`}</text>
+                      </Show>
+                    </box>
+                  </Show>
+                ),
+                isBatch: true,
+              }
+            }
+
             if (permission === "external_directory") {
               const meta = props.request.metadata ?? {}
               const parent = typeof meta["parentDir"] === "string" ? meta["parentDir"] : undefined
@@ -416,22 +493,30 @@ export function PermissionPrompt(props: { request: PermissionRequest }) {
             }
           }
 
+          const info = () => {
+            const permission = props.request.permission
+            const data = input()
+            return resolveInfo(permission, data)
+          }
+
           const current = info()
 
-          const header = () => (
-            <box flexDirection="column" gap={0}>
-              <box flexDirection="row" gap={1} flexShrink={0}>
-                <text fg={theme.warning}>{"△"}</text>
-                <text fg={theme.text}>Permission required</text>
+          const header = () => {
+            return (
+              <box flexDirection="column" gap={0}>
+                <box flexDirection="row" gap={1} flexShrink={0}>
+                  <text fg={theme.warning}>{"△"}</text>
+                  <text fg={theme.text}>Permission required</text>
+                </box>
+                <box flexDirection="row" gap={1} paddingLeft={2} flexShrink={0}>
+                  <text fg={theme.textMuted} flexShrink={0}>
+                    {current.icon}
+                  </text>
+                  <text fg={theme.text}>{current.title}</text>
+                </box>
               </box>
-              <box flexDirection="row" gap={1} paddingLeft={2} flexShrink={0}>
-                <text fg={theme.textMuted} flexShrink={0}>
-                  {current.icon}
-                </text>
-                <text fg={theme.text}>{current.title}</text>
-              </box>
-            </box>
-          )
+            )
+          }
 
           const body = (
             <Prompt
@@ -510,7 +595,7 @@ function RejectPrompt(props: { onConfirm: (message: string) => void; onCancel: (
           <text fg={theme.text}>Reject permission</text>
         </box>
         <box paddingLeft={1}>
-          <text fg={theme.textMuted}>Tell OpenCode what to do differently</text>
+          <text fg={theme.textMuted}>Tell Carthis what to do differently</text>
         </box>
       </box>
       <box

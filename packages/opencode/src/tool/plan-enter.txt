@@ -1,14 +1,13 @@
-Use this tool to suggest switching to plan agent when the user's request would benefit from planning before implementation.
+Use this tool when you have completed a task in build mode and are ready to return to plan mode.
 
-If they explicitly mention wanting to create a plan ALWAYS call this tool first.
+This tool requires you to provide a comprehensive markdown walkthrough detailing:
+1. The changes you have made.
+2. The testing you have performed.
+3. How you validated that your work is correct.
 
-This tool will ask the user if they want to switch to plan agent.
-
-Call this tool when:
-- The user's request is complex and would benefit from planning first
-- You want to research and design before making changes
-- The task involves multiple files or significant architectural decisions
+Call this tool:
+- ONLY after you have completed the assigned build task and validated your changes.
 
 Do NOT call this tool:
-- For simple, straightforward tasks
-- When the user explicitly wants immediate implementation
+- If you have not yet completed the task.
+- If you have not tested and validated your changes.

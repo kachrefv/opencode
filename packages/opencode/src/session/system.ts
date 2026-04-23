@@ -59,7 +59,7 @@ export const layer = Layer.effect(
             `  Today's date: ${new Date().toDateString()}`,
             `</env>`,
             `# Indexer & Notes`,
-            `Use the indexer tools (indexer_map, indexer_note_add, indexer_note_search, indexer_note_list) to navigate the codebase and store persistent insights.`,
+            `Use the indexer tools (codebase_map, indexer_note_add, indexer_note_search, indexer_note_list) to navigate the codebase and store persistent insights.`,
             `When creating or significantly modifying core files, use indexer_note_add to leave an atomic note explaining structural decisions.`,
           ].join("\n"),
         ]

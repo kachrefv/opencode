@@ -1,2 +1,2 @@
-- Retrieves all notes attached to a specific file.
-- Use this to see all historical insights for a file you are currently working on.
+- Retrieves all persistent notes currently attached to a specific file.
+- Use this tool proactively when you begin working on a critical or highly complex file to review previous architectural insights, gotchas, or historical context left by developers or other agents.

@@ -22,6 +22,8 @@ export interface Interface {
   readonly addNote: (filePath: string, content: string, tags?: string[]) => Effect.Effect<void>
   readonly searchNotes: (query: string, tags?: string[]) => Effect.Effect<any[]>
   readonly listNotes: (filePath: string) => Effect.Effect<any[]>
+  readonly updateNote: (id: string, content: string, tags?: string[]) => Effect.Effect<void>
+  readonly deleteNote: (id: string) => Effect.Effect<void>
 }
 
 export class Service extends Context.Service<Service, Interface>()("@opencode/Indexer") {}
@@ -216,6 +218,29 @@ export const layer = Layer.effect(
         )
       })
 
+    const updateNote = (id: string, content: string, tags?: string[]) =>
+      Effect.sync(() => {
+        const workspace = Instance.project.id
+        Database.use((db: any) => {
+          const values: any = { content, time_updated: Date.now() }
+          if (tags !== undefined) values.tags = tags
+          db.update(IndexerNoteTable)
+            .set(values)
+            .where(and(eq(IndexerNoteTable.workspace, workspace), eq(IndexerNoteTable.id, id)))
+            .run()
+        })
+      })
+
+    const deleteNote = (id: string) =>
+      Effect.sync(() => {
+        const workspace = Instance.project.id
+        Database.use((db: any) =>
+          db.delete(IndexerNoteTable)
+            .where(and(eq(IndexerNoteTable.workspace, workspace), eq(IndexerNoteTable.id, id)))
+            .run(),
+        )
+      })
+
     return Service.of({
       init: Effect.fn("Indexer.init")(function* () {
         yield* Effect.catch(InstanceState.get(state), (e) => Effect.logError("Indexer init error", e))
@@ -224,6 +249,8 @@ export const layer = Layer.effect(
       addNote,
       searchNotes,
       listNotes,
+      updateNote,
+      deleteNote,
     })
   }),
 )

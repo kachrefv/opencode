@@ -1,0 +1,10 @@
+Use this tool to write the implementation plan to the session's designated plan file.
+
+This tool should be used to record the strategy and steps for the current task. It is specifically allowed in plan mode where other file write operations are restricted.
+
+Call this tool:
+- To create a new implementation plan
+- To update an existing implementation plan with more details or corrections
+- Before exiting plan mode via plan_exit
+
+The path to the plan file is managed automatically by the system.

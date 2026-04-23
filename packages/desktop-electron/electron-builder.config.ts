@@ -58,7 +58,7 @@ const getBase = (): Configuration => ({
     schemes: ["carthis"],
   },
   win: {
-    icon: `resources/icons/icon.ico`,
+    icon: `resources/icons/icon.png`,
     signtoolOptions: {
       sign: signWindows,
     },
@@ -67,8 +67,6 @@ const getBase = (): Configuration => ({
   nsis: {
     oneClick: false,
     allowToChangeInstallationDirectory: true,
-    installerIcon: `resources/icons/icon.ico`,
-    installerHeaderIcon: `resources/icons/icon.ico`,
   },
   linux: {
     icon: `resources/icons`,
@@ -85,7 +83,7 @@ function getConfig() {
       return {
         ...base,
         appId: "ai.carthis.desktop.dev",
-        productName: "Carthis Dev",
+        productName: "Carthis",
         rpm: { packageName: "carthis-dev" },
       }
     }

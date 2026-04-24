@@ -1,5 +1,6 @@
 // Set DB path to memory BEFORE imports
 process.env.OPENCODE_DB = ":memory:"
+process.env.OPENCODE_CLIENT = "tui"
 
 import { describe, expect, afterEach } from "bun:test"
 import { Effect, Layer } from "effect"

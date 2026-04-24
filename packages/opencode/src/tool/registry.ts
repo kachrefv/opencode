@@ -47,12 +47,17 @@ import { Skill } from "../skill"
 import { Permission } from "@/permission"
 import { Indexer } from "../indexer/indexer"
 import { CodebaseMapTool } from "./codebase_map"
+import { CodebaseSearchTool } from "./codebase_search"
+import { MemoryAddTool } from "./memory_add"
+import { MemorySearchTool } from "./memory_search"
+import { MemoryConsolidateTool } from "./memory_consolidate"
 import { IndexerNoteAddTool } from "./indexer_note_add"
 import { IndexerNoteSearchTool } from "./indexer_note_search"
 import { IndexerNoteListTool } from "./indexer_note_list"
 import { IndexerNoteUpdateTool } from "./indexer_note_update"
 import { IndexerNoteDeleteTool } from "./indexer_note_delete"
 import { BatchExecuteTool } from "./batch_execute"
+import { EKM } from "../memory/ekm"
 
 const log = Log.create({ service: "tool.registry" })
 
@@ -96,6 +101,7 @@ export const layer: Layer.Layer<
   | Format.Service
   | Truncate.Service
   | Indexer.Service
+  | EKM.Service
 > = Layer.effect(
   Service,
   Effect.gen(function* () {
@@ -132,6 +138,10 @@ export const layer: Layer.Layer<
     const indexernoteupdate = yield* IndexerNoteUpdateTool
     const indexernotedelete = yield* IndexerNoteDeleteTool
     const batchexecutetool = yield* BatchExecuteTool
+    const codebase_search = yield* CodebaseSearchTool
+    const memory_add = yield* MemoryAddTool
+    const memory_search = yield* MemorySearchTool
+    const memory_consolidate = yield* MemoryConsolidateTool
     const agent = yield* Agent.Service
 
     const state = yield* InstanceState.make<State>(
@@ -223,6 +233,10 @@ export const layer: Layer.Layer<
           indexer_note_update: Tool.init(indexernoteupdate),
           indexer_note_delete: Tool.init(indexernotedelete),
           batch_execute: Tool.init(batchexecutetool),
+          codebase_search: Tool.init(codebase_search),
+          memory_add: Tool.init(memory_add),
+          memory_search: Tool.init(memory_search),
+          memory_consolidate: Tool.init(memory_consolidate),
         })
 
         return {
@@ -250,8 +264,12 @@ export const layer: Layer.Layer<
             tool.indexer_note_update,
             tool.indexer_note_delete,
             tool.batch_execute,
+            tool.codebase_search,
+            tool.memory_add,
+            tool.memory_search,
+            tool.memory_consolidate,
             ...(Flag.OPENCODE_EXPERIMENTAL_LSP_TOOL ? [tool.lsp] : []),
-            ...(Flag.OPENCODE_CLIENT === "cli" ? [tool.plan, tool.plan_enter, tool.plan_write, tool.walkthrough_write] : []),
+            ...(Flag.OPENCODE_CLIENT === "cli" || Flag.OPENCODE_CLIENT === "tui" ? [tool.plan, tool.plan_enter, tool.plan_write, tool.walkthrough_write] : []),
           ],
           task: tool.task,
           read: tool.read,
@@ -372,5 +390,6 @@ export const defaultLayer = Layer.suspend(() =>
     Layer.provide(Ripgrep.defaultLayer),
     Layer.provide(Truncate.defaultLayer),
     Layer.provide(Indexer.defaultLayer),
+    Layer.provide(EKM.defaultLayer),
   ),
 )

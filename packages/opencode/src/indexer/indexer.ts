@@ -86,6 +86,10 @@ export const layer = Layer.effect(
         const cfg = yield* configService.get()
         if (flag || cfg.experimental?.disable_indexer) return
 
+        const isInteractiveClient = Flag.OPENCODE_CLIENT === "tui" || Flag.OPENCODE_CLIENT === "desktop"
+        const isInitializedProject = Instance.project.time.initialized !== undefined
+        if (!isInteractiveClient && !isInitializedProject) return
+
         log.info("initializing indexer", { directory: Instance.directory })
 
         // Initial scan

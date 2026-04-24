@@ -111,6 +111,10 @@ export const TuiThreadCommand = cmd({
       // spawn or async work so the OS cannot kill the process group.
       win32DisableProcessedInput()
 
+      if (process.env.OPENCODE_CLIENT === undefined || process.env.OPENCODE_CLIENT === "cli") {
+        process.env.OPENCODE_CLIENT = "tui"
+      }
+
       if (args.fork && !args.continue && !args.session) {
         UI.error("--fork requires --continue or --session")
         process.exitCode = 1
@@ -131,9 +135,13 @@ export const TuiThreadCommand = cmd({
         return
       }
       const cwd = Filesystem.resolve(process.cwd())
+      const prompt = await input(args.prompt)
+      const config = await TuiConfig.get()
+
       const env = sanitizedProcessEnv({
         [OPENCODE_PROCESS_ROLE]: "worker",
         [OPENCODE_RUN_ID]: ensureRunID(),
+        ...(config.log_level ? { OPENCODE_LOG_LEVEL: config.log_level } : {}),
       })
 
       const worker = new Worker(file, {
@@ -178,9 +186,6 @@ export const TuiThreadCommand = cmd({
         })
         worker.terminate()
       }
-
-      const prompt = await input(args.prompt)
-      const config = await TuiConfig.get()
 
       const network = resolveNetworkOptionsNoConfig(args)
       const external =

@@ -1,4 +1,5 @@
 import { Provider } from "@/provider"
+import * as Session from "./session"
 import { Log } from "@/util"
 import { Context, Effect, Layer, Record } from "effect"
 import * as Stream from "effect/Stream"
@@ -10,6 +11,7 @@ import { Config } from "@/config"
 import { Instance } from "@/project/instance"
 import type { Agent } from "@/agent/agent"
 import type { MessageV2 } from "./message-v2"
+import { Hash } from "@opencode-ai/shared/util/hash"
 import { Plugin } from "@/plugin"
 import { SystemPrompt } from "./system"
 import { Flag } from "@/flag/flag"
@@ -26,6 +28,14 @@ import * as Option from "effect/Option"
 import * as OtelTracer from "@effect/opentelemetry/Tracer"
 
 const log = Log.create({ service: "llm" })
+
+function logUsage(l: ReturnType<typeof log.clone>, usage: { tokens: { cache: { read: number; write: number } } }) {
+  const { read, write } = usage.tokens.cache
+  if (read > 0 || write > 0) {
+    l.info("cache usage", { read, write, ratio: read > 0 ? (read / (read + write)).toFixed(2) : "0.00" })
+  }
+}
+
 export const OUTPUT_TOKEN_MAX = ProviderTransform.OUTPUT_TOKEN_MAX
 type Result = Awaited<ReturnType<typeof streamText>>
 
@@ -59,7 +69,7 @@ export class Service extends Context.Service<Service, Interface>()("@opencode/LL
 const live: Layer.Layer<
   Service,
   never,
-  Auth.Service | Config.Service | Provider.Service | Plugin.Service | Permission.Service
+  Auth.Service | Config.Service | Provider.Service | Plugin.Service | Permission.Service | SystemPrompt.Service
 > = Layer.effect(
   Service,
   Effect.gen(function* () {
@@ -68,6 +78,7 @@ const live: Layer.Layer<
     const provider = yield* Provider.Service
     const plugin = yield* Plugin.Service
     const perm = yield* Permission.Service
+    const systemSvc = yield* SystemPrompt.Service
 
     const run = Effect.fn("LLM.run")(function* (input: StreamRequest) {
       const l = log
@@ -83,12 +94,13 @@ const live: Layer.Layer<
         providerID: input.model.providerID,
       })
 
-      const [language, cfg, item, info] = yield* Effect.all(
+      const [language, cfg, item, info, volatile] = yield* Effect.all(
         [
           provider.getLanguage(input.model),
           config.get(),
           provider.getProvider(input.model.providerID),
           auth.get(input.model.providerID),
+          systemSvc.volatile(),
         ],
         { concurrency: "unbounded" },
       )
@@ -96,19 +108,19 @@ const live: Layer.Layer<
       // TODO: move this to a proper hook
       const isOpenaiOauth = item.id === "openai" && info?.type === "oauth"
 
-      const system: string[] = []
-      system.push(
-        [
-          // use agent prompt otherwise provider prompt
-          ...(input.agent.prompt ? [input.agent.prompt] : SystemPrompt.provider(input.model)),
-          // any custom prompt passed into this call
-          ...input.system,
-          // any custom prompt from last user message
-          ...(input.user.system ? [input.user.system] : []),
-        ]
-          .filter((x) => x)
-          .join("\n"),
-      )
+      const staticParts: string[] = [
+        ...(input.agent.prompt ? [input.agent.prompt] : SystemPrompt.provider(input.model)),
+        ...input.system,
+      ]
+      const volatileParts: string[] = [
+        ...(input.user.system ? [input.user.system] : []),
+        ...volatile,
+      ]
+
+      const instructionPrompt = staticParts.filter((x) => x).join("\n")
+      const volatilePrompt = volatileParts.filter((x) => x).join("\n")
+
+      const system: string[] = [instructionPrompt, volatilePrompt]
 
       const header = system[0]
       yield* plugin.trigger(
@@ -116,12 +128,9 @@ const live: Layer.Layer<
         { sessionID: input.sessionID, model: input.model },
         { system },
       )
-      // rejoin to maintain 2-part structure for caching if header unchanged
-      if (system.length > 2 && system[0] === header) {
-        const rest = system.slice(1)
-        system.length = 0
-        system.push(header, rest.join("\n"))
-      }
+
+      // Generate a stable hash for the instruction part to use as a static cache key
+      const instructionHash = Hash.fast(system[0])
 
       const variant =
         !input.small && input.model.variants && input.user.model.variant
@@ -129,11 +138,12 @@ const live: Layer.Layer<
           : {}
       const base = input.small
         ? ProviderTransform.smallOptions(input.model)
-        : ProviderTransform.options({
-            model: input.model,
-            sessionID: input.sessionID,
-            providerOptions: item.options,
-          })
+  : ProviderTransform.options({
+      model: input.model,
+      sessionID: input.sessionID,
+      projectID: instructionHash,
+      providerOptions: item.options,
+    })
       const options: Record<string, any> = pipe(
         base,
         mergeDeep(input.model.options),
@@ -330,7 +340,15 @@ const live: Layer.Layer<
           })
         : undefined
 
-      return streamText({
+      const result = streamText({
+        onFinish(result) {
+          const usage = Session.getUsage({
+            model: input.model,
+            usage: result.usage,
+            metadata: result.providerMetadata,
+          })
+          logUsage(l, usage)
+        },
         onError(error) {
           l.error("stream error", {
             error,
@@ -409,6 +427,7 @@ const live: Layer.Layer<
           },
         },
       })
+      return result
     })
 
     const stream: Interface["stream"] = (input) =>
@@ -422,7 +441,7 @@ const live: Layer.Layer<
 
             const result = yield* run({ ...input, abort: ctrl.signal })
 
-            return Stream.fromAsyncIterable(result.fullStream, (e) => (e instanceof Error ? e : new Error(String(e))))
+            return Stream.fromAsyncIterable(result.fullStream, (e) => (e instanceof Error ? e : new Error(String(e)))) as any
           }),
         ),
       )
@@ -439,15 +458,17 @@ export const defaultLayer = Layer.suspend(() =>
     Layer.provide(Config.defaultLayer),
     Layer.provide(Provider.defaultLayer),
     Layer.provide(Plugin.defaultLayer),
+    Layer.provide(SystemPrompt.defaultLayer),
   ),
 )
 
-function resolveTools(input: Pick<StreamInput, "tools" | "agent" | "permission" | "user">) {
+const resolveTools = (input: Pick<StreamInput, "tools" | "agent" | "permission" | "user">) => {
   const disabled = Permission.disabled(
     Object.keys(input.tools),
     Permission.merge(input.agent.permission, input.permission ?? []),
   )
-  return Record.filter(input.tools, (_, k) => input.user.tools?.[k] !== false && !disabled.has(k))
+  const filtered = Record.filter(input.tools, (_, k) => input.user.tools?.[k] !== false && !disabled.has(k))
+  return Object.fromEntries(Object.entries(filtered).sort(([a], [b]) => a.localeCompare(b)))
 }
 
 // Check if messages contain any tool-call content
